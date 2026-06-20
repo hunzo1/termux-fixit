@@ -1,0 +1,128 @@
+Metadata-Version: 2.4
+Name: termux-fixit
+Version: 1.0.0
+Summary: Fix Python ModuleNotFoundError, build failures, and pip errors that are specific to Termux/Android.
+Author: hunzo1
+License: MIT
+Project-URL: Homepage, https://github.com/hunzo1/termux-fixit
+Project-URL: Repository, https://github.com/hunzo1/termux-fixit
+Project-URL: Issues, https://github.com/hunzo1/termux-fixit/issues
+Keywords: termux,android,pip-error,modulenotfounderror,python-error-fix,termux-python,cli
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: Android
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: Topic :: Utilities
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Provides-Extra: pretty
+Requires-Dist: rich>=13.0.0; extra == "pretty"
+Dynamic: license-file
+
+# fixit — Fix Python Errors on Termux Automatically
+
+`fixit` is a CLI tool that reads a Python traceback and tells you the **exact Termux command** to fix it — not a generic Stack Overflow answer, but what actually works on Android arm64.
+
+```bash
+python script.py 2>&1 | fixit
+```
+
+No more guessing whether `pip install numpy` will work on your phone. It won't — `fixit` tells you that, and gives you `pkg install python-numpy` instead.
+
+---
+
+## The problem this solves
+
+If you build Python on Termux, you've hit one of these:
+
+- `ModuleNotFoundError: No module named 'numpy'` — and `pip install numpy` just sits there trying to compile from source, or fails outright.
+- `error: externally-managed-environment` — pip refuses to install anything on newer Termux Python.
+- `Failed building wheel for <package>` — no explanation of what's actually missing.
+- `ImportError: libxml2.so: cannot open shared object file` — a native library is missing and there's no obvious fix.
+
+None of these errors tell you it's a Termux-specific problem. `fixit` knows the difference between "this is a real bug in your code" and "this package just needs `pkg install` first."
+
+---
+
+## Install
+
+```bash
+pip install termux-fixit
+```
+
+For colored output, install the optional extra (plain text works fine without it):
+
+```bash
+pip install termux-fixit[pretty]
+```
+
+---
+
+## Usage
+
+### Fix a `ModuleNotFoundError` on Termux
+
+Pipe any failing script straight in:
+
+```bash
+python script.py 2>&1 | fixit
+```
+
+### Fix `pip install` errors on Termux without re-running the script
+
+```bash
+fixit --file error.txt
+```
+
+### Check if your `requirements.txt` will work on Termux *before* installing
+
+```bash
+fixit scan requirements.txt
+```
+
+This flags every package that needs special handling, and tells you exactly which ones are realistically impossible to build on a phone (looking at you, `tensorflow` and `dlib`).
+
+### Look up a single package
+
+```bash
+fixit lookup pandas
+```
+
+---
+
+## What it knows
+
+`fixit` ships with a built-in database covering 50+ commonly broken packages on Termux, including:
+
+- **Scientific stack:** numpy, pandas, scipy, scikit-learn, matplotlib
+- **Images/vision:** pillow, opencv-python, dlib, pycairo
+- **Databases:** psycopg2, mysqlclient, asyncpg
+- **Crypto/networking:** cryptography, pynacl, pyzmq, grpcio
+- **The "don't even try" list:** tensorflow, torch, pyarrow, spacy, dlib — packages with no realistic path to building on-device
+
+Plus detection for:
+
+- `externally-managed-environment` errors
+- Missing `.so` shared library errors
+- Missing C compiler errors
+- `Failed building wheel for X` errors
+
+---
+
+## Why this exists
+
+Termux runs Python on Android's arm64 architecture without a normal Linux package ecosystem behind it. Most pip packages with C extensions ship prebuilt wheels for x86_64 Linux/Mac/Windows — but not for Termux. The fix is almost always "use `pkg install` instead of `pip install`," but knowing *which* packages need that, and what the equivalent Termux package is called, isn't documented anywhere in one place. This tool is that place.
+
+---
+
+## Contributing
+
+Found a package that breaks on Termux and isn't in the database yet? Open an issue or PR with the error output and the `pkg install` command that fixes it — the database is just a Python dict in `fixit/packages.py`, easy to extend.
+
+## License
+
+MIT

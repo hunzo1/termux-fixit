@@ -1,0 +1,15 @@
+LICENSE
+README.md
+pyproject.toml
+fixit/__init__.py
+fixit/cli.py
+fixit/detectors.py
+fixit/packages.py
+fixit/scanner.py
+fixit/ui.py
+termux_fixit.egg-info/PKG-INFO
+termux_fixit.egg-info/SOURCES.txt
+termux_fixit.egg-info/dependency_links.txt
+termux_fixit.egg-info/entry_points.txt
+termux_fixit.egg-info/requires.txt
+termux_fixit.egg-info/top_level.txt

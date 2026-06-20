@@ -1,0 +1,2 @@
+[console_scripts]
+fixit = fixit.cli:main
